@@ -402,6 +402,22 @@
                 </div>
                 
                 <div class="form-group">
+                    <label>Academic Age (Optional)</label>
+                    <select id="filter-age">
+                        <option value="all">All Academic Ages</option>
+                        <option value="1-5">1-5 years</option>
+                        <option value="6-10">6-10 years</option>
+                        <option value="11-15">11-15 years</option>
+                        <option value="16-20">16-20 years</option>
+                        <option value="21-25">21-25 years</option>
+                        <option value="26-30">26-30 years</option>
+                        <option value="31-35">31-35 years</option>
+                        <option value="36-40">36-40 years</option>
+                        <option value=">40">&gt;40 years</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
                     <label>Select Metric</label>
                     <select id="metric-select">
                         <option value="h_index">H-Index</option>
@@ -466,6 +482,22 @@
                     </div>
                 </div>
                 
+                <div class="form-group">
+                    <label>Compare Against Academic Age</label>
+                    <select id="search-filter-age" onchange="showPersonMetrics()">
+                        <option value="all">All Academic Ages</option>
+                        <option value="1-5">1-5 years</option>
+                        <option value="6-10">6-10 years</option>
+                        <option value="11-15">11-15 years</option>
+                        <option value="16-20">16-20 years</option>
+                        <option value="21-25">21-25 years</option>
+                        <option value="26-30">26-30 years</option>
+                        <option value="31-35">31-35 years</option>
+                        <option value="36-40">36-40 years</option>
+                        <option value=">40">&gt;40 years</option>
+                    </select>
+                </div>
+                
                 <div class="result" id="name-result">
                     <div class="person-header">
                         <div class="person-name" id="found-name">David Mark Yousem</div>
@@ -506,10 +538,11 @@
             document.getElementById(tabId).classList.add('active');
         }
         
-        function filterData(rankFilter, sexFilter) {
+        function filterData(rankFilter, sexFilter, ageFilter) {
             return DATA.filter(row => {
                 if (rankFilter !== 'all' && row[2] != rankFilter) return false;
                 if (sexFilter !== 'all' && row[3] !== sexFilter) return false;
+                if (ageFilter !== 'all' && row[14] !== ageFilter) return false;
                 return true;
             });
         }
@@ -538,6 +571,7 @@
             const value = parseFloat(document.getElementById('metric-value').value);
             const rankFilter = document.getElementById('filter-rank').value;
             const sexFilter = document.getElementById('filter-sex').value;
+            const ageFilter = document.getElementById('filter-age').value;
             
             if (isNaN(value)) {
                 alert('Please enter a valid number');
@@ -545,7 +579,7 @@
             }
             
             const metricInfo = METRICS.find(m => m.id === metricId);
-            const filtered = filterData(rankFilter, sexFilter);
+            const filtered = filterData(rankFilter, sexFilter, ageFilter);
             const result = calculatePercentile(value, filtered, metricInfo.idx);
             
             document.getElementById('result-pct').textContent = result.percentile;
@@ -554,9 +588,10 @@
             
             const rankText = rankFilter === 'all' ? 'all ranks' : RANK_NAMES[rankFilter].toLowerCase() + 's';
             const sexText = sexFilter === 'all' ? 'all sexes' : (sexFilter === 'M' ? 'males' : 'females');
+            const ageText = ageFilter === 'all' ? '' : `, ${ageFilter} years academic age`;
             
             document.getElementById('result-explanation').textContent = 
-                `Your value of ${value.toLocaleString()} ranks above ${result.percentile}% of ${result.count} nuclear medicine faculty (${rankText}, ${sexText})`;
+                `Your value of ${value.toLocaleString()} ranks above ${result.percentile}% of ${result.count} nuclear medicine faculty (${rankText}, ${sexText}${ageText})`;
             
             document.getElementById('metric-result').classList.add('show');
         }
@@ -597,7 +632,8 @@
             
             const rankFilter = document.getElementById('search-filter-rank').value;
             const sexFilter = document.getElementById('search-filter-sex').value;
-            const filtered = filterData(rankFilter, sexFilter);
+            const ageFilter = document.getElementById('search-filter-age').value;
+            const filtered = filterData(rankFilter, sexFilter, ageFilter);
             
             const rankName = RANK_NAMES[selectedPerson[2]] || '';
             const sexName = selectedPerson[3] === 'M' ? 'Male' : 'Female';
@@ -606,8 +642,9 @@
             document.getElementById('found-details').textContent = `${rankName} · ${sexName}`;
             
             const rankText = rankFilter === 'all' ? 'all ranks' : RANK_NAMES[rankFilter].toLowerCase() + 's';
+            const ageText = ageFilter === 'all' ? '' : `, ${ageFilter} years`;
             document.getElementById('found-comparing').textContent = 
-                `Comparing against ${filtered.length} nuclear medicine faculty (${rankText})`;
+                `Comparing against ${filtered.length} nuclear medicine faculty (${rankText}${ageText})`;
             
             const metricsHtml = METRICS.map(m => {
                 const value = selectedPerson[m.idx];
